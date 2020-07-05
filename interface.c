@@ -99,7 +99,7 @@ void Register()  //按结构体的大小，一次写入或者读入1个结构体大小
 }
 
 //登录系统
-void  Login()
+users*  Login()
 {
     users a, b;//定义结构体The_users别名
     int cnt = 0;//尝试次数计数
@@ -137,7 +137,7 @@ void  Login()
                 if (TRYMAX - cnt == 0)//如果超过最大次数
                 {
                     printf("超过最大次数，即将退出\n");
-                    return;
+                    exit(0);//退出程序
                 }
                 printf("请输入账号\n");
                 scanf("%s", &a.id);
@@ -154,7 +154,7 @@ void  Login()
             fclose(fp);
             printf("登录成功,开始你的表演吧!\n");
             Sleep(500);
-            return;
+            return &a;
         }
         else
         {
@@ -165,7 +165,7 @@ void  Login()
             if (TRYMAX - cnt == 0)//如果超过最大次数
             {
                 printf("超过最大次数，即将退出\n");
-                return;
+                exit(0);//退出程序
             }
             printf("请重新输入！\n");
             scanf("%s", &a.pwd);
@@ -174,8 +174,9 @@ void  Login()
 }
 
 //登陆界面
-void LoginInterface()//改进字符输入输入字母会一直提示重新输入
+users* LoginInterface()//改进字符输入输入字母会一直提示重新输入
 {   
+    users* curr;
     char f;//登陆or注册标志
     printf("登陆请输入1，注册请输入2\n");
     while (1)
@@ -189,6 +190,85 @@ void LoginInterface()//改进字符输入输入字母会一直提示重新输入
     {
         Register();
     }
-    Login();
+    curr = Login();
+    return curr;
 }
 
+int Score_Rank(users* a)
+{
+    FILE* fp;
+    if ((fp = fopen("users.txt", "r")) == NULL)                 //如果此文件不存在
+    {
+        if ((fp = fopen("users.txt", "w+")) == NULL)
+        {
+            printf("无法建立文件！\n");
+            exit(0);
+        }
+    }
+
+    //id score level  bublerank
+    int num = 0;//在user里面的人数
+    unsigned int current_read_position = ftell(fp);
+    int file_size;
+    fseek(fp, 0, SEEK_END);
+    //获取文件的大小
+    file_size = ftell(fp);
+    //恢复文件原来读取的位置
+    fseek(fp, current_read_position, SEEK_SET);
+    num = file_size / sizeof(users);
+    fclose(fp);    
+    //在game里面已经更新了score和level
+
+    int rank = 1;
+    users b = { {0},{0},0,0 };//初始化
+//打开rank。txt
+    if ((fp = fopen("rank.txt", "r")) == NULL)                 //如果此文件不存在
+    {
+        if ((fp = fopen("rank.txt", "w+")) == NULL)
+        {
+            printf("无法建立文件！\n");
+            exit(0);
+        }
+    }
+
+    fscanf(fp, "%s\t%d\t%d\n", b.id, &b.highLevel, &b.highMark);//selfdef
+    for (int i = 0;i < num;i++)
+    {
+        if (a->highMark > b.highMark) //a>b
+        {
+            fprintf(fp, "%s\t%d\t%d\n", a->id, a->highLevel, a->highMark);//selfdef
+            for (int i = 0; i < num; i++)
+            {
+                fprintf(fp, "%s\t%d\t%d\n", b.id, b.highLevel, b.highMark);//selfdef
+            }
+            break;
+        }
+        else
+        {
+            fprintf(fp, "%s\t%d\t%d\n", b.id, b.highLevel, b.highMark);//selfdef
+            rank++;
+            fscanf(fp, "%s\t%d\t%d\n", b.id, &b.highLevel, &b.highMark);//selfdef
+        }
+    }
+        return rank;
+}
+
+
+/*
+int p, temp;
+for (int i = 0; i < num - 1; i++)
+{
+    p = i;
+    for (int j = i; j < num; j++)
+    {
+        if (a[p] > a[j])  p = j;
+    }
+    if (p != i)
+    {
+        temp = a[p];
+        a[p] = a[i];
+        a[i] = temp;
+    }
+
+
+}*/

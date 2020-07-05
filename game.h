@@ -1,14 +1,20 @@
 #pragma once
 
+#define LENMAX 5//字符串最长大小
+
+
 //字母结构体
 typedef struct tag_letter
 {
     int x, y;   //字母下落位置
     char ch;    //字母
+    char str[LENMAX];   //字符串 sdf
+    int len;    
     int life;   //字母是否存活
 }Letter;
 
 int gaming();
+
 
 void init();
 void initLetters();
@@ -21,3 +27,5 @@ DWORD WINAPI runLetter(void* p);
 void hideCursor();
 void gameBegin();
 void gameOver();
+
+char* RandomString(char* string, int len);
