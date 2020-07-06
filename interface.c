@@ -20,7 +20,7 @@ void Create_File()
 //注册账号
 void Register()  //按结构体的大小，一次写入或者读入1个结构体大小
 {
-    users a;//结构体 The_users 重命名定义
+    users a = { {0},{0},0,0 };//结构体 The_users 重命名定义
     FILE* fp;
     char temp[20];
     int cnt = 0;//尝试次数
@@ -194,9 +194,10 @@ users* LoginInterface()//改进字符输入输入字母会一直提示重新输入
     return curr;
 }
 
-int Score_Rank(users* a)
+int Score_Rank(users* curr)
 {
     FILE* fp;
+    FILE* fp2;
     if ((fp = fopen("users.txt", "r")) == NULL)                 //如果此文件不存在
     {
         if ((fp = fopen("users.txt", "w+")) == NULL)
@@ -205,52 +206,52 @@ int Score_Rank(users* a)
             exit(0);
         }
     }
-
-    //id score level  bublerank
+    fp = fopen("users.txt", "r");
     int num = 0;//在user里面的人数
-    unsigned int current_read_position = ftell(fp);
-    int file_size;
-    fseek(fp, 0, SEEK_END);
-    //获取文件的大小
-    file_size = ftell(fp);
-    //恢复文件原来读取的位置
-    fseek(fp, current_read_position, SEEK_SET);
-    num = file_size / sizeof(users);
-    fclose(fp);    
-    //在game里面已经更新了score和level
+    int flag = 0, count = 0;
+    while (!feof(fp))
+    {
+        flag = fgetc(fp);
+        if (flag == '\n')
+            count++;
+    }
+    //file_row = count + 1; //加上最后一行
+    num = count;//人数=行数
 
     int rank = 1;
     users b = { {0},{0},0,0 };//初始化
-//打开rank。txt
-    if ((fp = fopen("rank.txt", "r")) == NULL)                 //如果此文件不存在
+//再打开rank.txt
+    if ((fp2 = fopen("rank.txt", "r")) == NULL)                 //如果此文件不存在
     {
-        if ((fp = fopen("rank.txt", "w+")) == NULL)
+        if ((fp2 = fopen("rank.txt", "w+")) == NULL)
         {
             printf("无法建立文件！\n");
             exit(0);
         }
     }
 
-    fscanf(fp, "%s\t%d\t%d\n", b.id, &b.highLevel, &b.highMark);//selfdef
-    for (int i = 0;i < num;i++)
+    fp2 = fopen("rank.txt", "a");//追加方式写入
+    fscanf(fp, "%s\t%s\t%d\t%d\n", b.id, b.pwd, &b.highLevel, &b.highMark);//按格式从users中读取
+    for (rank = 1;rank <= num; rank++)
     {
-        if (a->highMark > b.highMark) //a>b
+        if (curr->highMark > b.highMark || rank == num) //
         {
-            fprintf(fp, "%s\t%d\t%d\n", a->id, a->highLevel, a->highMark);//selfdef
-            for (int i = 0; i < num; i++)
+            fprintf(fp2, "%s\t%d\t%d\n", curr->id, curr->highLevel, curr->highMark);//selfdef
+            for (int i = 0; i < num - rank+1; i++)
             {
-                fprintf(fp, "%s\t%d\t%d\n", b.id, b.highLevel, b.highMark);//selfdef
+                fprintf(fp2, "%s\t%d\t%d\n", b.id, b.highLevel, b.highMark);//selfdef
             }
             break;
         }
         else
         {
-            fprintf(fp, "%s\t%d\t%d\n", b.id, b.highLevel, b.highMark);//selfdef
-            rank++;
-            fscanf(fp, "%s\t%d\t%d\n", b.id, &b.highLevel, &b.highMark);//selfdef
+            fprintf(fp2, "%s\t%d\t%d\n", b.id, b.highLevel, b.highMark);//selfdef
+            fscanf(fp, "%s\t%s\t%d\t%d\n", b.id, b.pwd, &b.highLevel, &b.highMark);//按格式从users中读取
         }
     }
-        return rank;
+    fclose(fp);
+    fclose(fp2);
+    return rank;
 }
 
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #define LENMAX 5//字符串最长大小
-
-
+#define LEVELMAX 4//最大关卡数
+#define LETTERCOUNT 20//打字数量
 //字母结构体
 typedef struct tag_letter
 {
@@ -13,7 +13,7 @@ typedef struct tag_letter
     int life;   //字母是否存活
 }Letter;
 
-int gaming();
+int gaming(users* curr);
 
 
 void init();
@@ -26,6 +26,6 @@ void letterMoving();
 DWORD WINAPI runLetter(void* p);
 void hideCursor();
 void gameBegin();
-void gameOver();
+void gameOver(users* curr);
 
-char* RandomString(char* string, int len);
+//char* RandomString(char* string, int len);
