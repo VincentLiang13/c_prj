@@ -3,7 +3,7 @@
 #include "interface.h"
 #include "game.h"
 
-    users* curr;
+users* curr;
 int main()
 {   
 
@@ -12,7 +12,7 @@ int main()
     srand((unsigned)time(NULL));//时间种子
 
     curr = LoginInterface();//记录当前用户结构体指针
-    gaming(&curr);//修改Highlevel Highscore
+    gaming(curr);//修改Highlevel Highscore
     //printf("总分数：%d  最高关卡：%d\n", curr->highMark, curr->highLevel);
     //rank = Score_Rank(curr);
     //printf("rank:%d", rank);

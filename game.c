@@ -2,8 +2,9 @@
 
 #include "include.h"
 #include "game.h"
+#include "interface.h"
 
-
+extern int Score_Rank(users* a);
 /********************全局变量区************************/
 int letterCount = LETTERCOUNT;  //下落字母的总数量
 int beginFlag = 1;  //游戏何时结束，0-表示结束
@@ -12,7 +13,7 @@ int dropLetter; //打掉字母数量统计
 int errorCount; //按键错误统计
 int speed = 500;    //下落速度
 int bulletSpeed = 30;   //子弹速度
-int level = 3;
+int level = 1;
 int Lable = 0;
 //多线程-线程锁
 CRITICAL_SECTION csCursor;//光标锁
@@ -29,9 +30,7 @@ void init()
     downCount = 0;
     dropLetter = 0;
     errorCount = 0;
-    vis = (int*)malloc(sizeof(int) * letterCount);
-    visBullet = (int*)malloc(sizeof(int) * letterCount);
-    bulletflag = (int*)malloc(sizeof(int) * letterCount);
+
     memset(vis, 0, sizeof(int) * letterCount);
     memset(visBullet, 0, sizeof(int) * letterCount);
     for (int i = 0; i < letterCount; i++)
@@ -40,6 +39,7 @@ void init()
     }
 }
 //初始化字母序列
+
 void initLetters()
 {
     letters = (struct tag_letter*)malloc(sizeof(struct tag_letter) * letterCount);
@@ -77,7 +77,7 @@ void setTitle(void* p)
 {
     while (1)
     {
-        char str[30] = "";
+        char str[50] = "";
         sprintf(str, "title 总字母:%d 下落字母:%d 击落:%d", letterCount, downCount, dropLetter);
         system(str);
     }
@@ -103,9 +103,10 @@ DWORD WINAPI runBullet(void* p)//子弹发射过程
     drawLetter(' ', x, y);
     letters[letterId].life = 0;
     drawLetter(' ', letters[letterId].x, letters[letterId].y);
+    return 0;
 }
 //letterMoving:让所有字母下降一个位置
-void letterMoving()
+int letterMoving()
 {
     int cnt = 0;
     for (int i = 0; i < letterCount; i++)
@@ -143,6 +144,7 @@ void letterMoving()
     {
         beginFlag = 0;
     }
+    return 0;
 }
 //字母不断下降
 DWORD WINAPI runLetter(void* p)
@@ -159,6 +161,7 @@ DWORD WINAPI runLetter(void* p)
         return Lable;
     }
     beginFlag = 0;
+    return 0;
 }
 
 //隐藏控制台光标
@@ -173,25 +176,24 @@ void hideCursor()
 //开始游戏提示
 void gameBegin()
 {
-    int type;
     int flag = 1;
     while (flag)
     {
         switch (level)
         {
         case 1:
-            speed = 500;
-            bulletSpeed = 30;
+            speed = 180;
+            bulletSpeed = 10;
             flag = 0;
             break;
         case 2:
-            speed = 350;
-            bulletSpeed = 25;
+            speed = 170;
+            bulletSpeed = 10;
             flag = 0;
             break;
         case 3:
-            speed = 250;
-            bulletSpeed = 20;
+            speed = 160;
+            bulletSpeed = 10;
             flag = 0;
             break;
         case 4:
@@ -221,6 +223,19 @@ void gameOver(users* curr)
 
 int gaming(users* curr)
 {
+    vis = (int*)malloc(sizeof(int) * letterCount);
+    visBullet = (int*)malloc(sizeof(int) * letterCount);
+    bulletflag = (int*)malloc(sizeof(int) * letterCount);
+    printf("-------------------------------------\n");
+    printf("                     这是一个打字游戏\n");
+    printf("                    要使用英文输入法 \n");
+    printf("                 by 2191710109 梁嘉栋\n");
+    printf("-------------------------------------\n");
+
+for (level = 1; level <= 4; level++)
+{   
+    Lable = 0;
+    beginFlag = 1;
     system("title 打字游戏");
     gameBegin();
     hideCursor();
@@ -229,33 +244,48 @@ int gaming(users* curr)
     initLetters();
     CreateThread(NULL, 0, runLetter, NULL, 0, NULL);
     _beginthread(setTitle, 0, NULL);
+    gotoxy(0, 26);
+    printf("-------------------------------------------------------------------------------");
     while (beginFlag)
     {
-        if (_kbhit())
-        {
-            char ch = _getch();
-            ch = toupper(ch);
-            if (ch == 27)
+            if (_kbhit())
             {
-                break;
-            }
-            int flag = 1;
-            for (int i = 0; i < letterCount; i++)
-            {
-                if (letters[i].y < 25 && letters[i].y >= 0 && letters[i].life == 1 && letters[i].ch == ch && visBullet[i] == 0)
-                {
-                    flag = 0;
-                    dropLetter++;
-                    CreateThread(NULL, 0, runBullet, &bulletflag[i], 0, NULL);
-                    break;
-                }
-            }
-            if (flag) errorCount++;
-            if (Lable == -1) break;
-        }
-    }
-    system("cls");
+                char ch = _getch();
+                ch = toupper(ch);
+                if (ch == 27)  break;
 
+                int flag = 1;
+                for (int i = 0; i < letterCount; i++)
+                {
+                    if (letters[i].y < 25 && letters[i].y >= 0 && letters[i].life == 1 && letters[i].ch == ch && visBullet[i] == 0)
+                    {
+                        flag = 0;
+                        dropLetter++;
+                        CreateThread(NULL, 0, runBullet, &bulletflag[i], 0, NULL);
+                        break;
+                    }
+                }
+                if (flag) errorCount++;
+                if (Lable == -1) break;
+            }
+    }
+    if (Lable == -1)  break;
+    system("cls");
+    gotoxy(30, 14);
+    if (level <4)  printf("总分数：%d  下一个关卡：%d \n", dropLetter- errorCount,level+1);
+    else           printf("恭喜通关！");
+    gotoxy(30, 16);
+    system("\n\n\npause");
+    system("cls");
+/*
+    free(vis);
+    free(visBullet);
+    free(bulletflag);
+    free(letters);
+*/
+    
+}
+    system("cls");
     curr->highMark = dropLetter - errorCount;
     curr->highLevel = level;
     //printf("总字母:%d个 您击落:%d个 错误按键:%d次\n", letterCount, dropLetter, errorCount);

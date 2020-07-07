@@ -230,11 +230,11 @@ int Score_Rank(users* curr)
         }
     }
 
-    fp2 = fopen("rank.txt", "a");//追加方式写入
+    fp2 = fopen("rank.txt", "w+");//重新读写
     fscanf(fp, "%s\t%s\t%d\t%d\n", b.id, b.pwd, &b.highLevel, &b.highMark);//按格式从users中读取
     for (rank = 1;rank <= num; rank++)
     {
-        if (curr->highMark > b.highMark || rank == num) //
+        if (curr->highMark > b.highMark || rank == num ) //
         {
             fprintf(fp2, "%s\t%d\t%d\n", curr->id, curr->highLevel, curr->highMark);//selfdef
             for (int i = 0; i < num - rank+1; i++)
